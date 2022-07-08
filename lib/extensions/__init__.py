@@ -18,6 +18,7 @@ from .cutwork_segmentation import CutworkSegmentation
 from .density_map import DensityMap
 from .duplicate_params import DuplicateParams
 from .embroider_settings import EmbroiderSettings
+from .fill_to_stroke import FillToStroke
 from .flip import Flip
 from .generate_palette import GeneratePalette
 from .global_commands import GlobalCommands
@@ -66,6 +67,7 @@ __all__ = extensions = [StitchPlanPreview,
                         CommandsScaleSymbols,
                         ConvertToSatin,
                         ConvertToStroke,
+                        FillToStroke,
                         CutSatin,
                         AutoSatin,
                         AutoRun,
