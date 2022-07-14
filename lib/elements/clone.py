@@ -3,8 +3,6 @@
 # Copyright (c) 2010 Authors
 # Licensed under the GNU GPL version 3.0 or later.  See the file LICENSE for details.
 
-from math import atan, degrees
-
 from ..commands import is_command_symbol
 from ..i18n import _
 from ..svg.path import get_node_transform
@@ -60,7 +58,7 @@ class Clone(EmbroideryElement):
            type='float')
     @cache
     def clone_fill_angle(self):
-        return self.get_float_param('angle', 0)
+        return self.get_float_param('angle', None)
 
     def clone_to_element(self, node):
         from .utils import node_to_elements
@@ -82,15 +80,11 @@ class Clone(EmbroideryElement):
             angle = self.clone_fill_angle
         else:
             # clone angle
-            clone_mat = self.node.composed_transform()
-            clone_angle = degrees(atan(-clone_mat[1][0]/clone_mat[1][1]))
-            # source node angle
-            source_mat = source_node.composed_transform()
-            source_angle = degrees(atan(-source_mat[1][0]/source_mat[1][1]))
+            clone_angle = self.node.composed_transform().rotation_degrees()
             # source node fill angle
             source_fill_angle = source_node.get(param, 0)
 
-            angle = clone_angle + float(source_fill_angle) - source_angle
+            angle = source_fill_angle - clone_angle
         self.node.set(param, str(angle))
 
         elements = self.clone_to_element(self.node)
