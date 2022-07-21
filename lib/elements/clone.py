@@ -3,6 +3,8 @@
 # Copyright (c) 2010 Authors
 # Licensed under the GNU GPL version 3.0 or later.  See the file LICENSE for details.
 
+from inkex import NSS
+
 from ..commands import is_command_symbol
 from ..i18n import _
 from ..svg.path import get_node_transform
@@ -58,7 +60,7 @@ class Clone(EmbroideryElement):
            type='float')
     @cache
     def clone_fill_angle(self):
-        return self.get_float_param('angle', None)
+        return self.get_float_param('angle') or None
 
     def clone_to_element(self, node):
         from .utils import node_to_elements
@@ -73,24 +75,39 @@ class Clone(EmbroideryElement):
 
         self.node.style = source_node.specified_style()
 
-        # a. a custom set fill angle
-        # b. calculated rotation for the cloned fill element to look exactly as it's source
-        param = INKSTITCH_ATTRIBS['angle']
-        if self.clone_fill_angle is not None:
-            angle = self.clone_fill_angle
-        else:
-            # clone angle
-            clone_angle = self.node.composed_transform().rotation_degrees()
-            # source node fill angle
-            source_fill_angle = source_node.get(param, 0)
+        inkstitch_attribs = {k: v for k, v in source_node.attrib.iteritems() if NSS['inkstitch'] in k}
+        for key, value in inkstitch_attribs.items():
+            if not key == INKSTITCH_ATTRIBS['angle']:
+                self.node.set(key, value)
 
-            angle = source_fill_angle - clone_angle
-        self.node.set(param, str(angle))
+        # if no explicit fill angle is set use calculated rotation for the cloned
+        # fill element to look exactly as it's source
+        calculated_fill_angle = False
+        if self.clone_fill_angle is None:
+            # clone angle
+            clone_mat = self.node.composed_transform()
+            mat = clone_mat @ source_node.composed_transform()
+            try:
+                angle = mat.rotation_degrees()
+            except ValueError:
+                # this happens as soon there is skewing involved
+                angle = 0
+            # source node fill angle
+            source_fill_angle = float(source_node.get(INKSTITCH_ATTRIBS['angle'], 0))
+
+            angle = source_fill_angle - angle
+            self.node.set(INKSTITCH_ATTRIBS['angle'], str(angle))
+            calculated_fill_angle = True
 
         elements = self.clone_to_element(self.node)
 
         for element in elements:
             patches.extend(element.to_stitch_groups(last_patch))
+
+        # cleanup attributes
+        for key, value in inkstitch_attribs.items():
+            if not key == INKSTITCH_ATTRIBS['angle'] or calculated_fill_angle is True:
+                self.node.pop(key)
 
         return patches
 
