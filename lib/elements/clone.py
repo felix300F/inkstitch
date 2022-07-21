@@ -3,6 +3,8 @@
 # Copyright (c) 2010 Authors
 # Licensed under the GNU GPL version 3.0 or later.  See the file LICENSE for details.
 
+from math import atan2, degrees
+
 from inkex import NSS
 
 from ..commands import is_command_symbol
@@ -13,6 +15,7 @@ from ..svg.tags import (EMBROIDERABLE_TAGS, INKSTITCH_ATTRIBS, SVG_USE_TAG,
                         XLINK_HREF)
 from ..utils import cache
 from .element import EmbroideryElement, param
+from .fill_stitch import FillStitch
 from .validation import ObjectTypeWarning, ValidationWarning
 
 
@@ -80,22 +83,19 @@ class Clone(EmbroideryElement):
             if not key == INKSTITCH_ATTRIBS['angle']:
                 self.node.set(key, value)
 
-        # if no explicit fill angle is set use calculated rotation for the cloned
-        # fill element to look exactly as it's source
+        # if no explicit fill angle is set use calculated rotation
         calculated_fill_angle = False
-        if self.clone_fill_angle is None:
-            # clone angle
-            clone_mat = self.node.composed_transform()
-            mat = clone_mat @ source_node.composed_transform()
-            try:
-                angle = mat.rotation_degrees()
-            except ValueError:
-                # this happens as soon there is skewing involved
-                angle = 0
+        if self.clone_fill_angle is None and self.node.style['fill'] is not None:
             # source node fill angle
             source_fill_angle = float(source_node.get(INKSTITCH_ATTRIBS['angle'], 0))
 
-            angle = source_fill_angle - angle
+            # inkex has transform.rotation_degrees(), but in some cases it fails (skewing). So let's calculate the
+            # angle between the minimum rotated rectangle of the source element and clone element
+            source_direction = self.get_element_direction(source_node)
+            clone_direction = self.get_element_direction(self.node)
+            angle = source_fill_angle + source_direction - clone_direction
+
+            # set angle value
             self.node.set(INKSTITCH_ATTRIBS['angle'], str(angle))
             calculated_fill_angle = True
 
@@ -110,6 +110,11 @@ class Clone(EmbroideryElement):
                 self.node.pop(key)
 
         return patches
+
+    def get_element_direction(self, node):
+        element = FillStitch(node)
+        rect = element.shape.minimum_rotated_rectangle.exterior.coords
+        return round(degrees(atan2(rect[2][1] - rect[0][1], rect[2][0] - rect[0][0])) % 360)
 
     def get_clone_style(self, style_name, node, default=None):
         style = node.style[style_name] or default
