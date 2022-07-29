@@ -17,7 +17,7 @@ from .cut_satin import CutSatin
 from .cutwork_segmentation import CutworkSegmentation
 from .density_map import DensityMap
 from .duplicate_params import DuplicateParams
-from .embroider_settings import EmbroiderSettings
+from .preferences import Preferences
 from .flip import Flip
 from .generate_palette import GeneratePalette
 from .global_commands import GlobalCommands
@@ -87,5 +87,5 @@ __all__ = extensions = [StitchPlanPreview,
                         Simulator,
                         Reorder,
                         DuplicateParams,
-                        EmbroiderSettings,
+                        Preferences,
                         CutworkSegmentation]
