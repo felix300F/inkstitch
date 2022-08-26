@@ -63,6 +63,7 @@ inkstitch_attribs = [
     'guided_fill_strategy',
     'join_style',
     'avoid_self_crossing',
+    'smoothness',
     'clockwise',
     'reverse',
     'expand_mm',

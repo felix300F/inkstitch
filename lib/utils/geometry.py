@@ -161,7 +161,7 @@ def smooth_path(path, smoothness=100.0):
 
     # .T transposes the array (for some reason splprep expects
     # [[x1, x2, ...], [y1, y2, ...]]
-    tck, fp, ier, msg = splprep(coords.T, s=s, nest=-1, full_output=1)
+    tck, fp, ier, msg = splprep(coords.T, s=s, k=5, nest=-1, full_output=1)
     if ier > 0:
         from ..debug import debug
         debug.log(f"error {ier} smoothing path: {msg}")
