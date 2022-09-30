@@ -6,7 +6,6 @@
 from copy import deepcopy
 from itertools import chain
 
-from shapely import affinity as shaffinity
 from shapely import geometry as shgeo
 from shapely.ops import nearest_points
 

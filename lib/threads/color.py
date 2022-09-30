@@ -7,8 +7,9 @@ import colorsys
 import re
 
 import tinycss2.color3
-from inkex import Color
 from pyembroidery.EmbThread import EmbThread
+
+from inkex import Color
 
 
 class ThreadColor(object):
@@ -66,7 +67,7 @@ class ThreadColor(object):
         return hash(self.rgb)
 
     def __ne__(self, other):
-        return not(self == other)
+        return not (self == other)
 
     def __repr__(self):
         return "ThreadColor" + repr(self.rgb)
